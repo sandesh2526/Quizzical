@@ -2,4 +2,6 @@
 
 ## Intro
 
-A quizzical is a random trivia quiz
+Quizzical is a random trivia quiz
+
+Currently stuck at restarting the game.
