@@ -101,3 +101,20 @@ hr {
   width: 70vw;
   min-width: 100%;
 }
+
+.wait {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+}
+
+.circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: #f69292 solid 8px;
+  background-color: antiquewhite;
+}

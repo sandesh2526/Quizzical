@@ -2,73 +2,89 @@ import react, { useEffect } from 'react';
 import './App.css';
 import Question from './Question';
 import { nanoid } from 'nanoid';
+import Waiting from './Waiting';
 
 // https://www.figma.com/file/E9S5iPcm10f0RIHK8mCqKL/Quizzical-App?node-id=0%3A1
 
 function App() {
   const [isStarted, setIsStarted] = react.useState(false);
-  const [questions, setQuestions] = react.useState([])
   const [selectedOptions, setSelectedOptions] = react.useState([]);
-  const [questionsMapped, setQuestionsMapped] = react.useState([])
+  const [questions, setQuestion] = react.useState([]);
   const [isChecked, setIsChecked] = react.useState(false);
   const [isRestarted, setIsRestarted] = react.useState(false);
   const [score, setScore] = react.useState(0);
-
-  function randomizeArray(array) {
-    return [...array].sort();
-  }
-
+  const [isLoaded, setIsLoaded] = react.useState(false);
+  const [allCategories, setAllCategories] = react.useState({});
+  const [selectedCategory, setSelectedCategory] = react.useState("");
+  let questionElements = [];
+  let categoryElements = [];
+  // Fetch the API and set the information to the state variable aka questions
   useEffect(
     () => {
+      fetch("https://opentdb.com/api_category.php")
+        .then(rawData => rawData.json())
+        .then(data => setAllCategories(data.trivia_categories))
+      let url = "https://opentdb.com/api.php?amount=5"
+      console.log(allCategories,url);
+      if(allCategories) {
+        allCategories.map(category => {
+        })        
+      }
+      if (selectedCategory !== "") {
+        url += selectedCategory;
+      }
       fetch("https://opentdb.com/api.php?amount=5")
         .then(jsonData => jsonData.json())
-        .then(data => setQuestions(data.results))
-    }, [isRestarted]);
+        .then(data => {
+          if (data.results) {
+            setIsLoaded(true)
+          }
+          return data.results
+        })
+        .then(rawQuestions => {
+          if (rawQuestions.length > 0) {
+            let questionMappedAtStart = rawQuestions.map(rawQuestion => {
+              return {
+                question: rawQuestion.question,
+                options: randomizeArray([rawQuestion.correct_answer, ...rawQuestion.incorrect_answers]),
+                correct_answer: rawQuestion.correct_answer,
+                id: nanoid()
+              }
+            })
+            setQuestion(questionMappedAtStart);
+          }
+        })
+    }, [isRestarted, setIsLoaded, setQuestion, selectedCategory]);
 
+  // Each time the data is loaded in the state update the selected option
   useEffect(() => {
-    if (questions.length > 0) {
-      let questionMappedAtStart = questions.map(question => {
+    if (isLoaded) {
+      setSelectedOptions(questions.map(question => {
         return {
-          question: question.question,
-          options: randomizeArray([question.correct_answer, ...question.incorrect_answers]),
-          correct_answer: question.correct_answer,
-          id: nanoid()
+          questionsId: question.id,
+          selectedOption: ""
         }
-      })
-      setQuestionsMapped(questionMappedAtStart);
+      }));
     }
-  }, [questions])
+  }, [questions, setSelectedOptions, isLoaded])
 
-  useEffect(() => {
-    setSelectedOptions(questionsMapped.map(question => {
-      return {
-        questionsId: question.id,
-        selectedOption: ""
-      }
-    }));
-  }, [questionsMapped])
-
+  // Check whether selected options are correct or not. Called after submiting the answers
   function checkAnswers(e) {
     e.preventDefault();
-    let arrayOfCorrectness = selectedOptions.map(so => so.selectedOption === (questionsMapped.find(q => q.id === so.questionsId)).correct_answer)
+    let arrayOfCorrectness = selectedOptions.map(so => so.selectedOption === (questions.find(q => q.id === so.questionsId)).correct_answer)
     for (let id = 0; id < arrayOfCorrectness.length; id++) {
-      if(arrayOfCorrectness[id]) {
-        setScore(prevscore => prevscore+1)
-        console.log("SEtting Score"+score);
+      if (arrayOfCorrectness[id]) {
+        setScore(prevscore => prevscore + 1)
       };
     }
     setIsChecked(true)
-   /*  arrayOfCorrectness.map(answer => {
-      if (answer) {
-        score++;
-        return answer
-      }
-    }
-    ) */
   }
 
+  /*
+    Takes the event and question id as parameter.
+    It is called each time the option is selected and then sets the selected option to the modified value.
+  */
   function handleChange(e, id) {
-    console.log(e.target.value, "ID of question: ", id);
     setSelectedOptions(prevSelectedOptions => prevSelectedOptions.map(option => {
       if (option.questionsId === id) {
         return {
@@ -81,25 +97,59 @@ function App() {
     }))
   }
 
+  function randomizeArray(array) {
+    return [...array].sort();
+  }
+
+  // Reset the state of the game by resetting the states
   function restartTheGame() {
     setIsRestarted(prevState => !prevState);
+    setQuestion([]);
+    setIsLoaded(false);
+    setScore(0);
     setIsChecked(false);
   }
 
-  const questionElements = questionsMapped.map(question => {
-    return <Question key={question.id} question={question} isChecked={isChecked} handleChange={handleChange} selectedOptions={selectedOptions} />
-  })
+  // Set the question elements to render them
+  if (isLoaded) {
+    questionElements = questions.map(question => {
+      return <Question
+        isLoaded={isLoaded}
+        key={question.id}
+        question={question}
+        isChecked={isChecked}
+        handleChange={handleChange}
+        selectedOptions={selectedOptions}
+      />
+    })
+  }
 
   return (
     <div className='app'>
       {
         isStarted
           ?
-          <div className='question-container'>
-            {questionElements}
-            {!isChecked && <button onClick={checkAnswers} className='start-button check-answers'>Check Answers</button>}
-            {isChecked && <span className='advise'><span className='score-text'>Your scored {score}/5 correct answers</span><button onClick={restartTheGame} className='start-button check-answers play-again'>Play again</button></span>}
-          </div>
+          isLoaded ?
+            questions
+            &&
+            <div className='question-container'>
+              {questionElements}
+              {!isChecked && <button onClick={checkAnswers} className='start-button check-answers'>Check Answers</button>}
+              {
+                isChecked
+                &&
+                <span className='advise'>
+                  <span className='score-text'>
+                    Your scored {score}/5 correct answers
+                  </span>
+                  <button onClick={restartTheGame} className='start-button check-answers play-again'>Play again</button>
+                </span>
+              }
+            </div>
+            :
+            <div>
+              <Waiting />
+            </div>
           :
           <div className='not-started'>
             <h1 className='quiz-title'>Quizzical</h1>
