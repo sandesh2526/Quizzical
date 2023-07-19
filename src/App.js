@@ -14,25 +14,11 @@ function App() {
   const [isRestarted, setIsRestarted] = react.useState(false);
   const [score, setScore] = react.useState(0);
   const [isLoaded, setIsLoaded] = react.useState(false);
-  const [allCategories, setAllCategories] = react.useState({});
-  const [selectedCategory, setSelectedCategory] = react.useState("");
   let questionElements = [];
-  let categoryElements = [];
+
   // Fetch the API and set the information to the state variable aka questions
   useEffect(
     () => {
-      fetch("https://opentdb.com/api_category.php")
-        .then(rawData => rawData.json())
-        .then(data => setAllCategories(data.trivia_categories))
-      let url = "https://opentdb.com/api.php?amount=5"
-      console.log(allCategories,url);
-      if(allCategories) {
-        allCategories.map(category => {
-        })        
-      }
-      if (selectedCategory !== "") {
-        url += selectedCategory;
-      }
       fetch("https://opentdb.com/api.php?amount=5")
         .then(jsonData => jsonData.json())
         .then(data => {
@@ -54,7 +40,7 @@ function App() {
             setQuestion(questionMappedAtStart);
           }
         })
-    }, [isRestarted, setIsLoaded, setQuestion, selectedCategory]);
+    }, [isRestarted, setIsLoaded, setQuestion]);
 
   // Each time the data is loaded in the state update the selected option
   useEffect(() => {
