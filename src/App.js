@@ -121,27 +121,32 @@ function App() {
           isLoaded ?
             questions
             &&
-            <div className='question-container'>
-              {questionElements}
-              {!isChecked && <button onClick={checkAnswers} className='start-button check-answers'>Check Answers</button>}
-              {
-                isChecked
-                &&
-                <span className='advise'>
-                  <span className='score-text'>
-                    Your scored {score}/5 correct answers
+            <>
+              <nav>
+                <h2 className='stylish-heading'>Quizzical</h2>
+              </nav>
+              <div className='question-container'>
+                {questionElements}
+                {!isChecked && <button onClick={checkAnswers} className='start-button check-answers'>Check Answers</button>}
+                {
+                  isChecked
+                  &&
+                  <span className='advise'>
+                    <span className='score-text'>
+                      Your scored {score}/5 correct answers
+                    </span>
+                    <button onClick={restartTheGame} className='start-button check-answers play-again'>Play again</button>
                   </span>
-                  <button onClick={restartTheGame} className='start-button check-answers play-again'>Play again</button>
-                </span>
-              }
-            </div>
-            :
+                }
+              </div>
+            </>
+            :// If the questions are loading from API call show waitint animation untill it loads 
             <div>
               <Waiting />
             </div>
-          :
+          : // If the quiz is not started show start button
           <div className='not-started'>
-            <h1 className='quiz-title'>Quizzical</h1>
+            <h1 className='quiz-title stylish-heading'>Quizzical</h1>
             <p className='quiz-description'>The random trivia quiz!</p>
             <button onClick={() => setIsStarted(true)} className='start-button'>Start Quiz</button>
           </div>

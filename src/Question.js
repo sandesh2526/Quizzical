@@ -21,7 +21,7 @@ export default function Question(props) {
 
     return (
         <div>
-            <h2>{decode(props.question.question)}</h2>
+            <h2 className="question">{decode(props.question.question)}</h2>
             <div className="options">
                 {optionElements}
             </div>
