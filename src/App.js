@@ -40,6 +40,9 @@ function App() {
             setQuestion(questionMappedAtStart);
           }
         })
+        .catch(someFun => {
+          return "This is bad!";
+        })
     }, [isRestarted, setIsLoaded, setQuestion]);
 
   // Each time the data is loaded in the state update the selected option
